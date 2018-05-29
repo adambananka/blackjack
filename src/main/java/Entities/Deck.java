@@ -25,27 +25,29 @@ public class Deck {
                 }
             }
         }
+        shuffleDeck();
     }
 
     public void resetDeck() {
         cards.addAll(removed);
         removed.clear();
+        shuffleDeck();
     }
 
     public void shuffleDeck() {
-        //Collections.shuffle(cards);
-        Random random = new Random();
+        Collections.shuffle(cards);
+        /*Random random = new Random();
         for (int i = cards.size() - 1; i > 0; i--)
         {
             int index = random.nextInt(i + 1);
             Card tmp = cards.remove(index);
             cards.add(index, cards.remove(i));
             cards.add(i, tmp);
-        }
+        }*/
     }
 
     public Card getNextCard() {
-        Card card = cards.get(0);
+        Card card = cards.remove(0);
         removed.add(card);
         return card;
     }

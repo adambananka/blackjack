@@ -21,6 +21,12 @@ public class Player {
         this.score += card.getValue();
     }
 
+    public void resetHand() {
+        cards.clear();
+        score = 0;
+        softHand = false;
+    }
+
     public String getName() {
         return name;
     }
