@@ -19,7 +19,7 @@ public class Game {
         players = new ArrayList<>();
     }
 
-    //TODO check blackjack, soft hand, bets, surrender, DB results, split
+    //TODO check blackjack, bets, surrender, DB results, split
 
     public void run() {
         ConsoleUI.initialMessage();
@@ -89,19 +89,19 @@ public class Game {
 
     private void finalizeHand() {
         int dealerScore = dealer.getScore();
-        Result dealerResult = Result.None;
+        Result dealerResult = null;
         if (dealerScore > 21) {
-            dealerResult = Result.Bust;
+            dealerResult = Result.Busted;
         }
         ConsoleUI.reportResult(dealer.getName(), dealerScore, dealerResult);
         for (Player player : players) {
             int playerScore = player.getScore();
             if (playerScore > 21) {
-                ConsoleUI.reportResult(player.getName(), playerScore, Result.Bust);
+                ConsoleUI.reportResult(player.getName(), playerScore, Result.Busted);
             } else if (dealerScore > 21 || playerScore > dealerScore) {
-                ConsoleUI.reportResult(player.getName(), playerScore, Result.Win);
+                ConsoleUI.reportResult(player.getName(), playerScore, Result.Won);
             } else if (playerScore < dealerScore) {
-                ConsoleUI.reportResult(player.getName(), playerScore, Result.Lose);
+                ConsoleUI.reportResult(player.getName(), playerScore, Result.Lost);
             } else if (playerScore == dealerScore) {
                 ConsoleUI.reportResult(player.getName(), playerScore, Result.Push);
             }

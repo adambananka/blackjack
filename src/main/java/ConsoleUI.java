@@ -93,25 +93,12 @@ public class ConsoleUI {
     public static void reportResult(String player, int score, Result result) {
         StringBuilder message = new StringBuilder(player);
         message.append(" has scored: ")
-                .append(score);
-        switch (result) {
-            case Blackjack:
-                message.append(". You have Blackjack!");
-                break;
-            case Win:
-                message.append(". You have won!");
-                break;
-            case Push:
-                message.append(". You have push!");
-                break;
-            case Lose:
-                message.append(". You have lost!");
-                break;
-            case Bust:
-                message.append(". You have busted!");
-                break;
-            default:
-                message.append(".");
+                .append(score)
+                .append(".");
+        if (result != null) {
+            message.append(" You have ")
+                    .append(result)
+                    .append("!");
         }
         System.out.println(message);
     }

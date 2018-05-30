@@ -1,5 +1,7 @@
 package Entities;
 
+import Enums.CardRank;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,8 +19,15 @@ public class Player {
     }
 
     public void takeCard(Card card) {
+        if (!softHand && card.getRank().equals(CardRank.Ace)) {
+            softHand = true;
+        }
         this.cards.add(card);
         this.score += card.getValue();
+        if (score > 21 && softHand) {
+            score -= 10;
+            softHand = false;
+        }
     }
 
     public void resetHand() {

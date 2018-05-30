@@ -5,9 +5,8 @@ package Enums;
  */
 public enum Result {
     Blackjack,
-    Win,
+    Won,
     Push,
-    Lose,
-    Bust,
-    None
+    Lost,
+    Busted
 }

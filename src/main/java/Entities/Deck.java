@@ -12,7 +12,7 @@ import java.util.Random;
  * @author Adam Bananka
  */
 public class Deck {
-    private final int NUMBER_OF_DECKS = 1; //one deck consists of 52 cards
+    private static final int NUMBER_OF_DECKS = 1; //one deck consists of 52 cards
 
     private List<Card> cards = new ArrayList<>();
     private List<Card> removed = new ArrayList<>();
@@ -34,7 +34,7 @@ public class Deck {
         shuffleDeck();
     }
 
-    public void shuffleDeck() {
+    private void shuffleDeck() {
         Collections.shuffle(cards);
         /*Random random = new Random();
         for (int i = cards.size() - 1; i > 0; i--)
@@ -50,5 +50,13 @@ public class Deck {
         Card card = cards.remove(0);
         removed.add(card);
         return card;
+    }
+
+    public List<Card> getCards() {
+        return cards;
+    }
+
+    public List<Card> getRemoved() {
+        return removed;
     }
 }

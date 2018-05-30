@@ -15,16 +15,12 @@ public class Card {
         this.rank = rank;
     }
 
-    public CardSuit getSuit() {
-        return suit;
+    public int getValue() {
+        return rank.getValue();
     }
 
     public CardRank getRank() {
         return rank;
-    }
-
-    public int getValue() {
-        return rank.getValue();
     }
 
     @Override
