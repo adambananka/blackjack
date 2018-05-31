@@ -19,15 +19,18 @@ public class ConsoleUI {
         System.out.println("How many players will play? (1-6):");
         String input = scanner.nextLine();
         if (input.length() > 1) {
+            System.out.println("Invalid input.");
             return getNumberOfPlayers();
         }
         try {
             int num = Integer.parseInt(input);
             if (num < 1 || num > 6) {
+                System.out.println("Invalid input.");
                 return getNumberOfPlayers();
             }
             return num;
         } catch (NumberFormatException ex) {
+            System.out.println("Invalid input.");
             return getNumberOfPlayers();
         }
     }
@@ -35,6 +38,22 @@ public class ConsoleUI {
     public static String getPlayerName(int playerNumber) {
         System.out.println("Enter name of player " + playerNumber + ":");
         return scanner.nextLine();
+    }
+
+    public static int getPlayerBet(String player, int chips) {
+        System.out.println(player + " you have " + chips + " chips. How much you want to bet?");
+        String input = scanner.nextLine();
+        try {
+            int bet = Integer.parseInt(input);
+            if (bet <= chips && bet > 0) {
+                return bet;
+            }
+            System.out.println("Invalid input.");
+            return getPlayerBet(player, chips);
+        } catch (NumberFormatException ex) {
+            System.out.println("Invalid input.");
+            return getPlayerBet(player, chips);
+        }
     }
 
     public static void gameBeginMessage() {
@@ -51,6 +70,9 @@ public class ConsoleUI {
                 .append(". His score is ")
                 .append(score)
                 .append(".");
+        if (score == 21 && cards.size() == 2) {
+            message.append(" You have Blackjack!");
+        }
         System.out.println(message);
     }
 
@@ -77,6 +99,7 @@ public class ConsoleUI {
         if (first && input.equals("surrender")) {
             return input;
         }
+        System.out.println("Invalid input.");
         return getMove(false);
     }
 
@@ -106,11 +129,7 @@ public class ConsoleUI {
     public static boolean wantNextHand() {
         System.out.println("Do you want next hand? ('yes' to confirm)");
         String input = scanner.nextLine().toLowerCase();
-        if (input.equals("yes")) {
-            return true;
-        }
-        return false;
-        //TODO report final chips
+        return input.equals("yes");
     }
 
     private static void reportOptions(boolean first) {

@@ -1,3 +1,4 @@
+import Entities.Dealer;
 import Entities.Deck;
 import Entities.Player;
 import Enums.Result;
@@ -9,23 +10,24 @@ import java.util.List;
  * @author Adam Bananka
  */
 public class Game {
-    private Player dealer;
+    private Dealer dealer;
     private List<Player> players;
     private Deck deck;
 
     public Game() {
-        dealer = new Player("Dealer");
+        dealer = new Dealer();
         deck = new Deck();
         players = new ArrayList<>();
     }
 
-    //TODO check blackjack, bets, surrender, DB results, split
+    //TODO DB results, split
 
     public void run() {
         ConsoleUI.initialMessage();
         initializePlayers();
         do {
             resetGameData();
+            makeBets();
             ConsoleUI.gameBeginMessage();
             makeInitialDeal();
             for (Player player : players) {
@@ -33,7 +35,9 @@ public class Game {
             }
             makeDealerTurn();
             finalizeHand();
+            //TODO check player chips == 0 => remove(player)
         } while (ConsoleUI.wantNextHand());
+        //TODO report final chips
     }
 
     private void initializePlayers() {
@@ -41,6 +45,13 @@ public class Game {
         for (int i = 0; i < numOfPlayers; i++) {
             String name = ConsoleUI.getPlayerName(i + 1);
             players.add(new Player(name));
+        }
+    }
+
+    private void makeBets() {
+        for (Player player : players) {
+            int bet = ConsoleUI.getPlayerBet(player.getName(), player.getChips());
+            player.setBet(bet);
         }
     }
 
@@ -58,9 +69,13 @@ public class Game {
     }
 
     private void makeTurn(Player player) {
+        if (player.hasBlackjack()) {
+            return;
+        }
         ConsoleUI.reportPlayerTurn(player.getName(), player.getCards(), player.getScore());
         do {
             String move;
+            //player has possibility to surrender only as first move (that means he/she only has 2 cards)
             if (player.getCards().size() == 2) {
                 move = ConsoleUI.getMove(true);
             } else {
@@ -73,6 +88,8 @@ public class Game {
                 case "stand":
                     return;
                 case "surrender":
+                    player.evaluateBetSurrender();
+                    player.resetHand();
                     return;
             }
             ConsoleUI.reportPlayerCards(player.getCards(), player.getScore());
@@ -92,18 +109,27 @@ public class Game {
         Result dealerResult = null;
         if (dealerScore > 21) {
             dealerResult = Result.Busted;
+        } else if (dealer.hasBlackjack()) {
+            dealerResult = Result.Blackjack;
         }
         ConsoleUI.reportResult(dealer.getName(), dealerScore, dealerResult);
         for (Player player : players) {
             int playerScore = player.getScore();
             if (playerScore > 21) {
                 ConsoleUI.reportResult(player.getName(), playerScore, Result.Busted);
-            } else if (dealerScore > 21 || playerScore > dealerScore) {
-                ConsoleUI.reportResult(player.getName(), playerScore, Result.Won);
-            } else if (playerScore < dealerScore) {
+                player.evaluateBetLost();
+            } else if (playerScore < dealerScore && dealerScore <= 21 && playerScore > 0) {
                 ConsoleUI.reportResult(player.getName(), playerScore, Result.Lost);
+                player.evaluateBetLost();
             } else if (playerScore == dealerScore) {
                 ConsoleUI.reportResult(player.getName(), playerScore, Result.Push);
+                //in case of Push, player do not win or lose anything
+            } else if (player.hasBlackjack()) {
+                ConsoleUI.reportResult(player.getName(), playerScore, Result.Blackjack);
+                player.evaluateBetBlackjack();
+            } else if (dealerScore > 21 || playerScore > dealerScore) {
+                ConsoleUI.reportResult(player.getName(), playerScore, Result.Won);
+                player.evaluateBetWon();
             }
         }
     }

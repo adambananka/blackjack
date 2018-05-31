@@ -1,54 +1,50 @@
 package Entities;
 
-import Enums.CardRank;
-
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * @author Adam Bananka
  */
-public class Player {
-    private String name;
-    private List<Card> cards = new ArrayList<>();
-    private int score = 0;
-    private boolean softHand = false;
+public class Player extends User {
+    private static final int INITIAL_CHIPS = 100;
+
+    private int chips;
+    private int bet;
 
     public Player(String name) {
-        this.name = name;
+        super(name);
+        chips = INITIAL_CHIPS;
     }
 
-    public void takeCard(Card card) {
-        if (!softHand && card.getRank().equals(CardRank.Ace)) {
-            softHand = true;
-        }
-        this.cards.add(card);
-        this.score += card.getValue();
-        if (score > 21 && softHand) {
-            score -= 10;
-            softHand = false;
-        }
-    }
-
+    @Override
     public void resetHand() {
-        cards.clear();
-        score = 0;
-        softHand = false;
+        super.resetHand();
+        bet = 0;
     }
 
-    public String getName() {
-        return name;
+    public void evaluateBetBlackjack() {
+        chips += Math.round(1.5 * bet);
     }
 
-    public List<Card> getCards() {
-        return cards;
+    public void evaluateBetWon() {
+        chips += bet;
     }
 
-    public int getScore() {
-        return score;
+    public void evaluateBetSurrender() {
+        chips -= Math.round(0.5 * bet);
     }
 
-    public boolean hasSoftHand() {
-        return softHand;
+    public void evaluateBetLost() {
+        chips -= bet;
+    }
+
+    public int getChips() {
+        return chips;
+    }
+
+    public int getBet() {
+        return bet;
+    }
+
+    public void setBet(int bet) {
+        this.bet = bet;
     }
 }
