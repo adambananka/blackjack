@@ -132,6 +132,18 @@ public class ConsoleUI {
         return input.equals("yes");
     }
 
+    public static void reportFinalChips(String player, int chips) {
+        System.out.println(player + " ended up with " + chips + "chips.");
+    }
+
+    public static void reportPlayerOutOfChips(String player) {
+        System.out.println(player + " has run out of chips! It's game over for her/him!");
+    }
+
+    public static void reportNoMorePlayers() {
+        System.out.println("There is no more players left! The game is over!");
+    }
+
     private static void reportOptions(boolean first) {
         StringBuilder message = new StringBuilder("You have these options: Hit, Stand");
         if (first) {

@@ -35,9 +35,9 @@ public class Game {
             }
             makeDealerTurn();
             finalizeHand();
-            //TODO check player chips == 0 => remove(player)
+            removePlayersOutOfChips();
         } while (ConsoleUI.wantNextHand());
-        //TODO report final chips
+        makeFinalSummary();
     }
 
     private void initializePlayers() {
@@ -139,6 +139,27 @@ public class Game {
         dealer.resetHand();
         for (Player player : players) {
             player.resetHand();
+        }
+    }
+
+    private void removePlayersOutOfChips() {
+        List<Player> toRemove = new ArrayList<>();
+        for (Player player : players) {
+            if (player.getChips() == 0) {
+                toRemove.add(player);
+                ConsoleUI.reportPlayerOutOfChips(player.getName());
+            }
+        }
+        players.removeAll(toRemove);
+        if (players.isEmpty()) {
+            ConsoleUI.reportNoMorePlayers();
+            System.exit(0);
+        }
+    }
+
+    private void makeFinalSummary() {
+        for (Player player : players) {
+            ConsoleUI.reportFinalChips(player.getName(), player.getChips());
         }
     }
 }
