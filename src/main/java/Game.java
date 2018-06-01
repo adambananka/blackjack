@@ -10,17 +10,20 @@ import java.util.List;
  * @author Adam Bananka
  */
 public class Game {
+    private ResultManager resultManager;
+
     private Dealer dealer;
     private List<Player> players;
     private Deck deck;
 
     public Game() {
+        resultManager = new ResultManager();
         dealer = new Dealer();
         deck = new Deck();
         players = new ArrayList<>();
     }
 
-    //TODO DB results, split
+    //TODO split
 
     public void run() {
         ConsoleUI.initialMessage();
@@ -38,6 +41,8 @@ public class Game {
             removePlayersOutOfChips();
         } while (ConsoleUI.wantNextHand());
         makeFinalSummary();
+        resultManager.saveAllResultLists();
+        System.exit(0);
     }
 
     private void initializePlayers() {
@@ -118,18 +123,23 @@ public class Game {
             if (playerScore > 21) {
                 ConsoleUI.reportResult(player.getName(), playerScore, Result.Busted);
                 player.evaluateBetLost();
+                resultManager.addResultList(player.getName(), player.getCards().toString(), playerScore, player.getBet(), Result.Busted);
             } else if (playerScore < dealerScore && dealerScore <= 21 && playerScore > 0) {
                 ConsoleUI.reportResult(player.getName(), playerScore, Result.Lost);
                 player.evaluateBetLost();
+                resultManager.addResultList(player.getName(), player.getCards().toString(), playerScore, player.getBet(), Result.Lost);
             } else if (playerScore == dealerScore) {
                 ConsoleUI.reportResult(player.getName(), playerScore, Result.Push);
                 //in case of Push, player do not win or lose anything
+                resultManager.addResultList(player.getName(), player.getCards().toString(), playerScore, player.getBet(), Result.Push);
             } else if (player.hasBlackjack()) {
                 ConsoleUI.reportResult(player.getName(), playerScore, Result.Blackjack);
                 player.evaluateBetBlackjack();
+                resultManager.addResultList(player.getName(), player.getCards().toString(), playerScore, player.getBet(), Result.Blackjack);
             } else if (dealerScore > 21 || playerScore > dealerScore) {
                 ConsoleUI.reportResult(player.getName(), playerScore, Result.Won);
                 player.evaluateBetWon();
+                resultManager.addResultList(player.getName(), player.getCards().toString(), playerScore, player.getBet(), Result.Won);
             }
         }
     }

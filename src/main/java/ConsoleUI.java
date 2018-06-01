@@ -37,7 +37,12 @@ public class ConsoleUI {
 
     public static String getPlayerName(int playerNumber) {
         System.out.println("Enter name of player " + playerNumber + ":");
-        return scanner.nextLine();
+        String input = scanner.nextLine();
+        if (input.length() > 0 && input.length() <= 32) {
+            return input;
+        }
+        System.out.println("Invalid input. Name must have between 1 and 32 characters.");
+        return getPlayerName(playerNumber);
     }
 
     public static int getPlayerBet(String player, int chips) {
@@ -133,7 +138,7 @@ public class ConsoleUI {
     }
 
     public static void reportFinalChips(String player, int chips) {
-        System.out.println(player + " ended up with " + chips + "chips.");
+        System.out.println(player + " ended up with " + chips + " chips.");
     }
 
     public static void reportPlayerOutOfChips(String player) {

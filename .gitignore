@@ -1,3 +1,5 @@
 .idea/*
 blackjack.iml
 target/*
+derby.log
+ResultList.txt
