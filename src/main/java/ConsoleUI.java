@@ -18,10 +18,6 @@ public class ConsoleUI {
     public static int getNumberOfPlayers() {
         System.out.println("How many players will play? (1-6):");
         String input = scanner.nextLine();
-        if (input.length() > 1) {
-            System.out.println("Invalid input.");
-            return getNumberOfPlayers();
-        }
         try {
             int num = Integer.parseInt(input);
             if (num < 1 || num > 6) {
@@ -95,17 +91,20 @@ public class ConsoleUI {
         reportPlayerCards(cards, score);
     }
 
-    public static String getMove(boolean first) {
-        reportOptions(first);
+    public static String getMove(boolean canSurrender, boolean canSplit) {
+        reportOptions(canSurrender, canSplit);
         String input = scanner.nextLine().toLowerCase();
         if (input.equals("hit") || input.equals("stand")) {
             return input;
         }
-        if (first && input.equals("surrender")) {
+        if (canSplit && input.equals("split")) {
+            return input;
+        }
+        if (canSurrender && input.equals("surrender")) {
             return input;
         }
         System.out.println("Invalid input.");
-        return getMove(false);
+        return getMove(canSurrender, canSplit);
     }
 
     public static void reportDealerTurn(List<Card> cards, int score) {
@@ -149,9 +148,12 @@ public class ConsoleUI {
         System.out.println("There is no more players left! The game is over!");
     }
 
-    private static void reportOptions(boolean first) {
+    private static void reportOptions(boolean canSurrender, boolean canSplit) {
         StringBuilder message = new StringBuilder("You have these options: Hit, Stand");
-        if (first) {
+        if (canSplit) {
+            message.append(", Split");
+        }
+        if (canSurrender) {
             message.append(", Surrender");
         }
         message.append(". What's your move?");

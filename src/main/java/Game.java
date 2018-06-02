@@ -1,5 +1,6 @@
 import Entities.Dealer;
 import Entities.Deck;
+import Entities.Hand;
 import Entities.Player;
 import Enums.Result;
 
@@ -22,9 +23,7 @@ public class Game {
         deck = new Deck();
         players = new ArrayList<>();
     }
-
-    //TODO split
-
+    
     public void run() {
         ConsoleUI.initialMessage();
         initializePlayers();
@@ -37,7 +36,7 @@ public class Game {
                 makeTurn(player);
             }
             makeDealerTurn();
-            finalizeHand();
+            finalizeRound();
             removePlayersOutOfChips();
         } while (ConsoleUI.wantNextHand());
         makeFinalSummary();
@@ -56,99 +55,112 @@ public class Game {
     private void makeBets() {
         for (Player player : players) {
             int bet = ConsoleUI.getPlayerBet(player.getName(), player.getChips());
-            player.setBet(bet);
+            player.getDefaultHand().setBet(bet);
         }
     }
 
     private void makeInitialDeal() {
+        //at the start player always has only one hand
         for (int i = 0; i < 2; i++) {
             for (Player player : players) {
-                player.takeCard(deck.getNextCard());
+                player.getDefaultHand().takeCard(deck.getNextCard());
             }
-            dealer.takeCard(deck.getNextCard());
+            dealer.getDefaultHand().takeCard(deck.getNextCard());
         }
-        ConsoleUI.reportDealerCard(dealer.getCards().get(0));
+        ConsoleUI.reportDealerCard(dealer.getDefaultHand().getCards().get(0));
         for (Player player : players) {
-            ConsoleUI.reportPlayerCards(player.getName(), player.getCards(), player.getScore());
+            ConsoleUI.reportPlayerCards(player.getName(), player.getDefaultHand().getCards(), player.getDefaultHand().getScore());
         }
     }
 
     private void makeTurn(Player player) {
-        if (player.hasBlackjack()) {
+        if (player.getDefaultHand().hasBlackjack()) {
             return;
         }
-        ConsoleUI.reportPlayerTurn(player.getName(), player.getCards(), player.getScore());
-        do {
-            String move;
-            //player has possibility to surrender only as first move (that means he/she only has 2 cards)
-            if (player.getCards().size() == 2) {
-                move = ConsoleUI.getMove(true);
-            } else {
-                move = ConsoleUI.getMove(false);
-            }
-            switch (move) {
-                case "hit":
-                    player.takeCard(deck.getNextCard());
-                    break;
-                case "stand":
-                    return;
-                case "surrender":
-                    player.evaluateBetSurrender();
-                    player.resetHand();
-                    return;
-            }
-            ConsoleUI.reportPlayerCards(player.getCards(), player.getScore());
-        } while (player.getScore() < 21);
+        for (int i = 0; i < player.getHands().size(); i++) {
+            Hand hand = player.getHands().get(i);
+            ConsoleUI.reportPlayerTurn(player.getName(), hand.getCards(), hand.getScore());
+            do {
+                String move;
+                //player has possibility to surrender only as first move (that means he/she only has 2 cards)
+                boolean canSurrender = hand.getCards().size() == 2;
+                boolean canSplit = hand.canSplit() && player.getChips() >= hand.getBet();
+                move = ConsoleUI.getMove(canSurrender, canSplit);
+                switch (move) {
+                    case "hit":
+                        hand.takeCard(deck.getNextCard());
+                        break;
+                    case "stand":
+                        return;
+                    case "surrender":
+                        player.evaluateBetSurrender(hand.getBet());
+                        hand.resetHand();
+                        return;
+                    case "split":
+                        splitHand(player, hand);
+                        break;
+                }
+                ConsoleUI.reportPlayerCards(hand.getCards(), hand.getScore());
+            } while (hand.getScore() < 21);
+        }
+    }
+
+    private void splitHand(Player player, Hand hand) {
+        Hand newHand = player.splitHand(hand);
+        hand.takeCard(deck.getNextCard());
+        newHand.takeCard(deck.getNextCard());
     }
 
     private void makeDealerTurn() {
-        ConsoleUI.reportDealerTurn(dealer.getCards(), dealer.getScore());
-        while (dealer.getScore() < 17) {
-            dealer.takeCard(deck.getNextCard());
-            ConsoleUI.reportDealerHit(dealer.getCards(), dealer.getScore());
+        ConsoleUI.reportDealerTurn(dealer.getDefaultHand().getCards(), dealer.getDefaultHand().getScore());
+        while (dealer.getDefaultHand().getScore() < 17) {
+            dealer.getDefaultHand().takeCard(deck.getNextCard());
+            ConsoleUI.reportDealerHit(dealer.getDefaultHand().getCards(), dealer.getDefaultHand().getScore());
         }
     }
 
-    private void finalizeHand() {
-        int dealerScore = dealer.getScore();
+    private void finalizeRound() {
+        int dealerScore = dealer.getDefaultHand().getScore();
         Result dealerResult = null;
         if (dealerScore > 21) {
             dealerResult = Result.Busted;
-        } else if (dealer.hasBlackjack()) {
+        } else if (dealer.getDefaultHand().hasBlackjack()) {
             dealerResult = Result.Blackjack;
         }
         ConsoleUI.reportResult(dealer.getName(), dealerScore, dealerResult);
         for (Player player : players) {
-            int playerScore = player.getScore();
-            if (playerScore > 21) {
-                ConsoleUI.reportResult(player.getName(), playerScore, Result.Busted);
-                player.evaluateBetLost();
-                resultManager.addResultList(player.getName(), player.getCards().toString(), playerScore, player.getBet(), Result.Busted);
-            } else if (playerScore < dealerScore && dealerScore <= 21 && playerScore > 0) {
-                ConsoleUI.reportResult(player.getName(), playerScore, Result.Lost);
-                player.evaluateBetLost();
-                resultManager.addResultList(player.getName(), player.getCards().toString(), playerScore, player.getBet(), Result.Lost);
-            } else if (playerScore == dealerScore) {
-                ConsoleUI.reportResult(player.getName(), playerScore, Result.Push);
-                //in case of Push, player do not win or lose anything
-                resultManager.addResultList(player.getName(), player.getCards().toString(), playerScore, player.getBet(), Result.Push);
-            } else if (player.hasBlackjack()) {
-                ConsoleUI.reportResult(player.getName(), playerScore, Result.Blackjack);
-                player.evaluateBetBlackjack();
-                resultManager.addResultList(player.getName(), player.getCards().toString(), playerScore, player.getBet(), Result.Blackjack);
-            } else if (dealerScore > 21 || playerScore > dealerScore) {
-                ConsoleUI.reportResult(player.getName(), playerScore, Result.Won);
-                player.evaluateBetWon();
-                resultManager.addResultList(player.getName(), player.getCards().toString(), playerScore, player.getBet(), Result.Won);
+            for (Hand hand : player.getHands()) {
+                int playerScore = hand.getScore();
+                if (playerScore > 21) {
+                    ConsoleUI.reportResult(player.getName(), playerScore, Result.Busted);
+                    player.evaluateBetLost(hand.getBet());
+                    resultManager.addResultList(player.getName(), hand.getCards().toString(), playerScore, hand.getBet(), Result.Busted);
+                } else if (playerScore < dealerScore && dealerScore <= 21 && playerScore > 0) {
+                    ConsoleUI.reportResult(player.getName(), playerScore, Result.Lost);
+                    player.evaluateBetLost(hand.getBet());
+                    resultManager.addResultList(player.getName(), hand.getCards().toString(), playerScore, hand.getBet(), Result.Lost);
+                } else if (playerScore == dealerScore) {
+                    ConsoleUI.reportResult(player.getName(), playerScore, Result.Push);
+                    //in case of Push, player do not win or lose anything
+                    resultManager.addResultList(player.getName(), hand.getCards().toString(), playerScore, hand.getBet(), Result.Push);
+                } else if (hand.hasBlackjack()) {
+                    ConsoleUI.reportResult(player.getName(), playerScore, Result.Blackjack);
+                    player.evaluateBetBlackjack(hand.getBet());
+                    resultManager.addResultList(player.getName(), hand.getCards().toString(), playerScore, hand.getBet(), Result.Blackjack);
+                } else if (dealerScore > 21 || playerScore > dealerScore) {
+                    ConsoleUI.reportResult(player.getName(), playerScore, Result.Won);
+                    player.evaluateBetWon(hand.getBet());
+                    resultManager.addResultList(player.getName(), hand.getCards().toString(), playerScore, hand.getBet(), Result.Won);
+                }
             }
         }
     }
 
     private void resetGameData() {
         deck.resetDeck();
-        dealer.resetHand();
+        dealer.resetHands();
         for (Player player : players) {
-            player.resetHand();
+            player.resetHands();
         }
     }
 
@@ -163,6 +175,7 @@ public class Game {
         players.removeAll(toRemove);
         if (players.isEmpty()) {
             ConsoleUI.reportNoMorePlayers();
+            resultManager.saveAllResultLists();
             System.exit(0);
         }
     }

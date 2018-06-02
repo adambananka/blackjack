@@ -27,36 +27,36 @@ public class PlayerTest {
 
     @Test
     public void takeCard() {
-        assertThat(player.getCards())
+        assertThat(player.getDefaultHand().getCards())
                 .isEmpty();
-        assertThat(player.getScore())
+        assertThat(player.getDefaultHand().getScore())
                 .isEqualTo(0);
-        player.takeCard(king);
-        assertThat(player.getCards())
+        player.getDefaultHand().takeCard(king);
+        assertThat(player.getDefaultHand().getCards())
                 .containsOnly(king);
-        assertThat(player.getScore())
+        assertThat(player.getDefaultHand().getScore())
                 .isEqualTo(10);
     }
 
     @Test
     public void takeCardAceOnHandValueChange() {
-        player.takeCard(ace);
-        player.takeCard(seven);
-        assertThat(player.getScore())
+        player.getDefaultHand().takeCard(ace);
+        player.getDefaultHand().takeCard(seven);
+        assertThat(player.getDefaultHand().getScore())
                 .isEqualTo(18);
-        player.takeCard(king);
-        assertThat(player.getScore())
+        player.getDefaultHand().takeCard(king);
+        assertThat(player.getDefaultHand().getScore())
                 .isEqualTo(18);
     }
 
     @Test
     public void takeCardAceTakenValueChange() {
-        player.takeCard(seven);
-        player.takeCard(king);
-        assertThat(player.getScore())
+        player.getDefaultHand().takeCard(seven);
+        player.getDefaultHand().takeCard(king);
+        assertThat(player.getDefaultHand().getScore())
                 .isEqualTo(17);
-        player.takeCard(ace);
-        assertThat(player.getScore())
+        player.getDefaultHand().takeCard(ace);
+        assertThat(player.getDefaultHand().getScore())
                 .isEqualTo(18);
     }
 }
