@@ -23,7 +23,7 @@ public class Game {
         deck = new Deck();
         players = new ArrayList<>();
     }
-    
+
     public void run() {
         ConsoleUI.initialMessage();
         initializePlayers();

@@ -46,6 +46,10 @@ public class Deck {
         }*/
     }
 
+    /**
+     * Removes the next card from the deck.
+     * @return  card removed from the deck
+     */
     public Card getNextCard() {
         Card card = cards.remove(0);
         removed.add(card);

@@ -21,6 +21,10 @@ public class Hand {
         bet = 0;
     }
 
+    /**
+     * Adds given card to hand and accordingly adjusts score and whether tha hand is 'soft'.
+     * @param card  card to be added to hand
+     */
     public void takeCard(Card card) {
         if (!softHand && card.getRank().equals(CardRank.Ace)) {
             softHand = true;
@@ -34,6 +38,10 @@ public class Hand {
         }
     }
 
+    /**
+     * Determines whether tha hand can be split.
+     * @return  true if hand can be split, false otherwise
+     */
     public boolean canSplit() {
         if (cards.size() != 2) {
             return false;
@@ -41,6 +49,10 @@ public class Hand {
         return cards.get(0).getValue() == cards.get(1).getValue();
     }
 
+    /**
+     * Splits the hand and adjusts needed fields.
+     * @return  card taken form hand by split and to be added to second hand
+     */
     public Card doSplit() {
         Card card = cards.remove(1);
         score = cards.get(0).getValue();
@@ -57,6 +69,10 @@ public class Hand {
         bet = 0;
     }
 
+    /**
+     * Determines whether there is Blackjack on the hand.
+     * @return  true in case of Blackjack
+     */
     public boolean hasBlackjack() {
         return score == 21 && cards.size() == 2;
     }

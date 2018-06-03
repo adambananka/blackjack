@@ -14,6 +14,9 @@ import java.util.logging.Level;
  * @author Adam Bananka
  */
 public class ResultManager {
+    private static final String FILE_NAME = "ResultList.txt";
+    private static final String FILE_ENCODE = "UTF-8";
+
     private static EntityManager em;
 
     public ResultManager() {
@@ -23,6 +26,14 @@ public class ResultManager {
         em = emf.createEntityManager();
     }
 
+    /**
+     * Creates result list from given parameters and adds it to DB.
+     * @param player    name of player
+     * @param cards     player's cards in string form
+     * @param score     player's score
+     * @param bet       player's bet
+     * @param result    player's result
+     */
     public void addResultList(String player, String cards, int score, int bet, Result result){
         em.getTransaction().begin();
         ResultList resultList = new ResultList(player, cards, score, bet, result);
@@ -30,12 +41,19 @@ public class ResultManager {
         em.getTransaction().commit();
     }
 
+    /**
+     * Retrieves all result lists from DB.
+     * @return  list of result lists
+     */
     public List<ResultList> getAllResultLists( ){
         return em.createQuery("SELECT r FROM ResultList r", ResultList.class).getResultList();
     }
 
+    /**
+     * Saves all result lists from DB to file.
+     */
     public void saveAllResultLists() {
-        try (PrintWriter writer = new PrintWriter("ResultList.txt", "UTF-8")){
+        try (PrintWriter writer = new PrintWriter(FILE_NAME, FILE_ENCODE)){
             List<ResultList> res = getAllResultLists();
             for (ResultList result : res) {
                 writer.println(result);
